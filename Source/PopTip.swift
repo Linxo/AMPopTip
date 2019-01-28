@@ -168,9 +168,8 @@ open class PopTip: UIView {
   @objc open dynamic var shouldDismissOnTap = true
   /// A boolean value that determines whether to dismiss when tapping outside the poptip.
   @objc open dynamic var shouldDismissOnTapOutside = true
-  /// A boolean value that determines whether to consider the originating frame as part of the poptip,
-  /// i.e wether to call the `tapHandler` or the `tapOutsideHandler` when the tap occurs in the `from` frame.
-  @objc open dynamic var shouldConsiderOriginatingFrameAsPopTip = false
+  /// A boolean value that determines whether to dismiss when tapping the originating view.s
+  @objc open dynamic var shouldDismissOnTapOriginatingView = true
   /// A boolean value that determines whether to dismiss when swiping outside the poptip.
   @objc open dynamic var shouldDismissOnSwipeOutside = false
   /// A boolean value that determines if the action animation should start automatically when the poptip is shown
@@ -183,7 +182,9 @@ open class PopTip: UIView {
     }
   }
   /// A block that will be fired when the user taps the poptip.
-  open var tapHandler: ((PopTip) -> Void)?
+  open var tapPopTipHandler: ((PopTip) -> Void)?
+  /// A block that will be fired when the user taps the originating view.
+  open var tapOriginatingViewHandler: ((PopTip) -> Void)?
   /// A block that will be fired when the user taps outside the poptip.
   open var tapOutsideHandler: ((PopTip) -> Void)?
   /// A block that will be fired when the user swipes outside the poptip.
@@ -213,9 +214,10 @@ open class PopTip: UIView {
   /// The mask by appears with fade in effect only.
   open private(set) var backgroundMask: UIView?
   /// The tap gesture recognizer. Read-only.
-  open private(set) var tapGestureRecognizer: UITapGestureRecognizer?
+  open private(set) var tapPopTipGestureRecognizer: UITapGestureRecognizer?
   fileprivate var attributedText: NSAttributedString?
   fileprivate var paragraphStyle = NSMutableParagraphStyle()
+  fileprivate var tapOriginatingViewGestureRecognizer: UITapGestureRecognizer?
   fileprivate var tapRemoveGestureRecognizer: UITapGestureRecognizer?
   fileprivate var swipeGestureRecognizer: UISwipeGestureRecognizer?
   fileprivate var dismissTimer: Timer?
@@ -449,14 +451,20 @@ open class PopTip: UIView {
     
     setNeedsDisplay()
 
-    if tapGestureRecognizer == nil {
-        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
-        tapGestureRecognizer?.cancelsTouchesInView = false
-        self.addGestureRecognizer(tapGestureRecognizer!)
+    if tapPopTipGestureRecognizer == nil {
+        tapPopTipGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
+        tapPopTipGestureRecognizer?.cancelsTouchesInView = false
+        self.addGestureRecognizer(tapPopTipGestureRecognizer!)
     }
+
     if shouldDismissOnTapOutside && tapRemoveGestureRecognizer == nil {
         tapRemoveGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTapOutside(_:)))
     }
+
+    if shouldDismissOnTapOriginatingView && tapOriginatingViewGestureRecognizer == nil {
+      tapOriginatingViewGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleOriginatingViewTap(_:)))
+    }
+
     if shouldDismissOnSwipeOutside && swipeGestureRecognizer == nil {
       swipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(PopTip.handleSwipeOutside(_:)))
       swipeGestureRecognizer?.direction = swipeRemoveGestureDirection
@@ -685,7 +693,12 @@ open class PopTip: UIView {
     setNeedsLayout()
     performEntranceAnimation {
       if let tapRemoveGesture = self.tapRemoveGestureRecognizer {
+        tapRemoveGesture.delegate = self
         self.containerView?.addGestureRecognizer(tapRemoveGesture)
+      }
+      if let tapOriginatingViewGestureRecognizer = self.tapOriginatingViewGestureRecognizer {
+        tapOriginatingViewGestureRecognizer.delegate = self
+        self.from.addGestureRecognizer(tapOriginatingViewGestureRecognizer)
       }
       if let swipeGesture = self.swipeGestureRecognizer {
         self.containerView?.addGestureRecognizer(swipeGesture)
@@ -706,21 +719,23 @@ open class PopTip: UIView {
     if shouldDismissOnTap {
       hide()
     }
-    tapHandler?(self)
+    tapPopTipHandler?(self)
   }
   
   @objc fileprivate func handleTapOutside(_ gesture: UITapGestureRecognizer) {
     if shouldDismissOnTapOutside {
       hide()
     }
-
-    if shouldConsiderOriginatingFrameAsPopTip && from.frame.contains(gesture.location(in: containerView)) {
-      tapHandler?(self)
-    } else {
-      tapOutsideHandler?(self)
-    }
+    tapOutsideHandler?(self)
   }
-  
+
+  @objc fileprivate func handleOriginatingViewTap(_ gesture: UITapGestureRecognizer) {
+    if shouldDismissOnTapOriginatingView {
+      hide()
+    }
+    tapOriginatingViewHandler?(self)
+  }
+
   @objc fileprivate func handleSwipeOutside(_ gesture: UITapGestureRecognizer) {
     if shouldDismissOnSwipeOutside {
       hide()
@@ -823,5 +838,13 @@ fileprivate extension UIEdgeInsets {
   
   var vertical: CGFloat {
     return self.top + self.bottom
+  }
+}
+
+extension PopTip: UIGestureRecognizerDelegate {
+  public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    // Make sure that the tapOriginatingViewGestureRecognizer and the tapRemoveGestureRecognizer work as expected, that is
+    // take into account the tapOriginatingViewGestureRecognizer before the tapRemoveGestureRecognizer.
+    return gestureRecognizer == tapOriginatingViewGestureRecognizer && otherGestureRecognizer == tapRemoveGestureRecognizer
   }
 }

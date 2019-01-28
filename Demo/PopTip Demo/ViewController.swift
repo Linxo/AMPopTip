@@ -37,6 +37,7 @@ class ViewController: UIViewController {
     popTip.font = UIFont(name: "Avenir-Medium", size: 12)!
     popTip.shouldDismissOnTap = true
     popTip.shouldDismissOnTapOutside = true
+    popTip.shouldDismissOnTapOriginatingView = true
     popTip.shouldDismissOnSwipeOutside = true
     popTip.edgeMargin = 5
     popTip.offset = 2
@@ -55,12 +56,16 @@ class ViewController: UIViewController {
     
     popTip.actionAnimation = .bounce(8)
 
-    popTip.tapHandler = { _ in
+    popTip.tapPopTipHandler = { _ in
       print("tap")
     }
 
     popTip.tapOutsideHandler = { _ in
       print("tap outside")
+    }
+
+    popTip.tapOriginatingViewHandler = { _ in
+      print("tap on originating view")
     }
 
     popTip.swipeOutsideHandler = { _ in
@@ -93,7 +98,7 @@ class ViewController: UIViewController {
       label.font = UIFont.systemFont(ofSize: 12)
       customView.addSubview(label)
       popTip.bubbleColor = UIColor(red: 0.95, green: 0.65, blue: 0.21, alpha: 1)
-      popTip.show(customView: customView, direction: .down, in: view, from: sender.frame)
+      popTip.show(customView: customView, direction: .down, in: view, from: sender)
 
       popTip.entranceAnimationHandler = { [weak self] completion in
         guard let `self` = self else { return }
@@ -112,21 +117,21 @@ class ViewController: UIViewController {
       } else {
         topRightDirection = .left
       }
-      popTip.show(text: "I have a offset to move the bubble down or left side.", direction: topRightDirection, maxWidth: 150, in: view, from: sender.frame)
+      popTip.show(text: "I have a offset to move the bubble down or left side.", direction: topRightDirection, maxWidth: 150, in: view, from: sender)
     case .bottomLeft:
       popTip.bubbleColor = UIColor(red: 0.73, green: 0.91, blue: 0.55, alpha: 1)
       let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12), NSAttributedString.Key.foregroundColor: UIColor.white]
       let underline: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 13), NSAttributedString.Key.foregroundColor: UIColor.white, NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
       let attributedText = NSMutableAttributedString(string: "I'm presenting a string ", attributes: attributes)
       attributedText.append(NSAttributedString(string: "with attributes!", attributes: underline))
-      popTip.show(attributedText: attributedText, direction: .up, maxWidth: 200, in: view, from: sender.frame)
+      popTip.show(attributedText: attributedText, direction: .up, maxWidth: 200, in: view, from: sender)
     case .bottomRight:
       popTip.bubbleColor = UIColor(red: 0.81, green: 0.04, blue: 0.14, alpha: 1)
-      popTip.show(text: "Animated popover, great for subtle UI tips and onboarding", direction: .left, maxWidth: 200, in: view, from: sender.frame)
+      popTip.show(text: "Animated popover, great for subtle UI tips and onboarding", direction: .left, maxWidth: 200, in: view, from: sender)
     case .center:
       popTip.arrowRadius = 2
       popTip.bubbleColor = UIColor(red: 0.31, green: 0.57, blue: 0.87, alpha: 1)
-      popTip.show(text: "Animated popover, great for subtle UI tips and onboarding", direction: direction, maxWidth: 200, in: view, from: sender.frame)
+      popTip.show(text: "Animated popover, great for subtle UI tips and onboarding", direction: direction, maxWidth: 200, in: view, from: sender)
       direction = direction.cycleDirection()
       timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { (_) in
         self.popTip.update(text: self.lyrics.sample())
