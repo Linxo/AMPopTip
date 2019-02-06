@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 `AMPopTip` adheres to [Semantic Versioning](http://semver.org/).
 
-- `4.0.0` Releases - [4.0.0](#400)
+- `3.5.1` Releases - [3.5.1](#351)
 - `3.5.0` Releases - [3.5.0](#350)  
 - `3.4.0` Releases - [3.4.0](#340)  
 - `3.3.0` Releases - [3.3.0](#330)  
@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [4.0.0](https://github.com/andreamazz/AMPopTip/releases/tag/3.5.0)
+## [3.5.1](https://github.com/andreamazz/AMPopTip/releases/tag/3.5.1)
 
 - Add a listener to the originating view.
 
