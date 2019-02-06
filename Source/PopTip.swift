@@ -156,7 +156,7 @@ open class PopTip: UIView {
   /// Flag to enable or disable background mask
   @objc open dynamic var shouldShowMask = false
   /// Holds the CGrect with the rect the tip is pointing to
-  open var from = CGRect.zero {
+  open var from = UIView(frame: .zero) {
     didSet {
       setup()
     }
@@ -168,6 +168,8 @@ open class PopTip: UIView {
   @objc open dynamic var shouldDismissOnTap = true
   /// A boolean value that determines whether to dismiss when tapping outside the poptip.
   @objc open dynamic var shouldDismissOnTapOutside = true
+  /// A boolean value that determines whether to dismiss when tapping the originating view.s
+  @objc open dynamic var shouldDismissOnTapOriginatingView = true
   /// A boolean value that determines whether to dismiss when swiping outside the poptip.
   @objc open dynamic var shouldDismissOnSwipeOutside = false
   /// A boolean value that determines if the action animation should start automatically when the poptip is shown
@@ -180,7 +182,9 @@ open class PopTip: UIView {
     }
   }
   /// A block that will be fired when the user taps the poptip.
-  open var tapHandler: ((PopTip) -> Void)?
+  open var tapPopTipHandler: ((PopTip) -> Void)?
+  /// A block that will be fired when the user taps the originating view.
+  open var tapOriginatingViewHandler: ((PopTip) -> Void)?
   /// A block that will be fired when the user taps outside the poptip.
   open var tapOutsideHandler: ((PopTip) -> Void)?
   /// A block that will be fired when the user swipes outside the poptip.
@@ -210,9 +214,10 @@ open class PopTip: UIView {
   /// The mask by appears with fade in effect only.
   open private(set) var backgroundMask: UIView?
   /// The tap gesture recognizer. Read-only.
-  open private(set) var tapGestureRecognizer: UITapGestureRecognizer?
+  open private(set) var tapPopTipGestureRecognizer: UITapGestureRecognizer?
   fileprivate var attributedText: NSAttributedString?
   fileprivate var paragraphStyle = NSMutableParagraphStyle()
+  fileprivate var tapOriginatingViewGestureRecognizer: UITapGestureRecognizer?
   fileprivate var tapRemoveGestureRecognizer: UITapGestureRecognizer?
   fileprivate var swipeGestureRecognizer: UISwipeGestureRecognizer?
   fileprivate var dismissTimer: Timer?
@@ -237,20 +242,20 @@ open class PopTip: UIView {
     let offset = self.offset * (direction == .up ? -1 : 1)
     
     frame.size = CGSize(width: textBounds.width + padding * 2 + edgeInsets.horizontal, height: textBounds.height + padding * 2 + edgeInsets.vertical + arrowSize.height)
-    var x = from.origin.x + from.width / 2 - frame.width / 2
+    var x = from.frame.origin.x + from.frame.width / 2 - frame.width / 2
     if x < 0 { x = edgeMargin }
     if (x + frame.width > containerView.bounds.width) { x = containerView.bounds.width - frame.width - edgeMargin }
     
     if direction == .down {
-      frame.origin = CGPoint(x: x, y: from.origin.y + from.height + offset)
+      frame.origin = CGPoint(x: x, y: from.frame.origin.y + from.frame.height + offset)
     } else {
-      frame.origin = CGPoint(x: x, y: from.origin.y - frame.height + offset)
+      frame.origin = CGPoint(x: x, y: from.frame.origin.y - frame.height + offset)
     }
     
     // Make sure that the bubble doesn't leave the boundaries of the view
     let arrowPosition = CGPoint(
-      x: from.origin.x + from.width / 2 - frame.origin.x,
-      y: (direction == .up) ? frame.height : from.origin.y + from.height - frame.origin.y + offset
+      x: from.frame.origin.x + from.frame.width / 2 - frame.origin.x,
+      y: (direction == .up) ? frame.height : from.frame.origin.y + from.frame.height - frame.origin.y + offset
     )
     
     if bubbleOffset > 0 && arrowPosition.x < bubbleOffset {
@@ -287,8 +292,8 @@ open class PopTip: UIView {
     let offset = self.offset * (direction == .left ? -1 : 1)
     frame.size = CGSize(width: textBounds.width + padding * 2 + edgeInsets.horizontal + arrowSize.height, height: textBounds.height + padding * 2 + edgeInsets.vertical)
     
-    let x = direction == .left ? from.origin.x - frame.width + offset : from.origin.x + from.width + offset
-    var y = from.origin.y + from.height / 2 - frame.height / 2
+    let x = direction == .left ? from.frame.origin.x - frame.width + offset : from.frame.origin.x + from.frame.width + offset
+    var y = from.frame.origin.y + from.frame.height / 2 - frame.height / 2
     
     if y < 0 { y = edgeMargin }
     //Make sure we stay in the view limits except if it has scroll then it must be inside contentview limits not the view
@@ -305,8 +310,8 @@ open class PopTip: UIView {
     
     // Make sure that the bubble doesn't leave the boundaries of the view
     let arrowPosition = CGPoint(
-      x: direction == .left ? from.origin.x - frame.origin.x + offset : from.origin.x + from.width - frame.origin.x + offset,
-      y: from.origin.y + from.height / 2 - frame.origin.y
+      x: direction == .left ? from.frame.origin.x - frame.origin.x + offset : from.frame.origin.x + from.frame.width - frame.origin.x + offset,
+      y: from.frame.origin.y + from.frame.height / 2 - frame.origin.y
     )
     
     if bubbleOffset > 0 && arrowPosition.y < bubbleOffset {
@@ -375,10 +380,10 @@ open class PopTip: UIView {
     backgroundColor = .clear
     
     if direction == .left {
-      maxWidth = CGFloat.minimum(maxWidth, from.origin.x - padding * 2 - edgeInsets.horizontal - arrowSize.width)
+      maxWidth = CGFloat.minimum(maxWidth, from.frame.origin.x - padding * 2 - edgeInsets.horizontal - arrowSize.width)
     }
     if direction == .right {
-      maxWidth = CGFloat.minimum(maxWidth, containerView.bounds.width - from.origin.x - from.width - padding * 2 - edgeInsets.horizontal - arrowSize.width)
+      maxWidth = CGFloat.minimum(maxWidth, containerView.bounds.width - from.frame.origin.x - from.frame.width - padding * 2 - edgeInsets.horizontal - arrowSize.width)
     }
     
     textBounds = textBounds(for: text, attributedText: attributedText, view: customView, with: font, padding: padding, edges: edgeInsets, in: maxWidth)
@@ -416,11 +421,11 @@ open class PopTip: UIView {
       layer.position = CGPoint(x: layer.position.x + rect.width / 2, y: layer.position.y + rect.height * anchor)
     case .none:
       rect.size = CGSize(width: textBounds.width + padding * 2.0 + edgeInsets.horizontal + borderWidth * 2, height: textBounds.height + padding * 2.0 + edgeInsets.vertical + borderWidth * 2)
-      rect.origin = CGPoint(x: from.midX - rect.size.width / 2, y: from.midY - rect.height / 2)
+      rect.origin = CGPoint(x: from.frame.midX - rect.size.width / 2, y: from.frame.midY - rect.height / 2)
       rect = rectContained(rect: rect)
       arrowPosition = CGPoint.zero
       layer.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-      layer.position = CGPoint(x: from.midX, y: from.midY)
+      layer.position = CGPoint(x: from.frame.midX, y: from.frame.midY)
     }
     
     label.frame = textBounds
@@ -446,14 +451,20 @@ open class PopTip: UIView {
     
     setNeedsDisplay()
 
-    if tapGestureRecognizer == nil {
-        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
-        tapGestureRecognizer?.cancelsTouchesInView = false
-        self.addGestureRecognizer(tapGestureRecognizer!)
+    if tapPopTipGestureRecognizer == nil {
+        tapPopTipGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
+        tapPopTipGestureRecognizer?.cancelsTouchesInView = false
+        self.addGestureRecognizer(tapPopTipGestureRecognizer!)
     }
+
     if shouldDismissOnTapOutside && tapRemoveGestureRecognizer == nil {
         tapRemoveGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTapOutside(_:)))
     }
+
+    if shouldDismissOnTapOriginatingView && tapOriginatingViewGestureRecognizer == nil {
+      tapOriginatingViewGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleOriginatingViewTap(_:)))
+    }
+
     if shouldDismissOnSwipeOutside && swipeGestureRecognizer == nil {
       swipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(PopTip.handleSwipeOutside(_:)))
       swipeGestureRecognizer?.direction = swipeRemoveGestureDirection
@@ -513,9 +524,9 @@ open class PopTip: UIView {
   ///   - direction: The direction of the poptip in relation to the element that generates it
   ///   - maxWidth: The maximum width of the poptip. If the poptip won't fit in the given space, this will be overridden.
   ///   - view: The view that will hold the poptip as a subview.
-  ///   - frame: The originating frame. The poptip's arrow will point to the center of this frame.
+  ///   - originatingView: The originating frame. The poptip's arrow will point to the center of this frame.
   ///   - duration: Optional time interval that determines when the poptip will self-dismiss.
-  open func show(text: String, direction: PopTipDirection, maxWidth: CGFloat, in view: UIView, from frame: CGRect, duration: TimeInterval? = nil) {
+  open func show(text: String, direction: PopTipDirection, maxWidth: CGFloat, in view: UIView, from originatingView: UIView, duration: TimeInterval? = nil) {
     resetView()
     
     attributedText = nil
@@ -526,7 +537,7 @@ open class PopTip: UIView {
     self.maxWidth = maxWidth
     customView?.removeFromSuperview()
     customView = nil
-    from = frame
+    from = originatingView
     
     show(duration: duration)
   }
@@ -538,9 +549,9 @@ open class PopTip: UIView {
   ///   - direction: The direction of the poptip in relation to the element that generates it
   ///   - maxWidth: The maximum width of the poptip. If the poptip won't fit in the given space, this will be overridden.
   ///   - view: The view that will hold the poptip as a subview.
-  ///   - frame: The originating frame. The poptip's arrow will point to the center of this frame.
+  ///   - originatingView: The originating frame. The poptip's arrow will point to the center of this frame.
   ///   - duration: Optional time interval that determines when the poptip will self-dismiss.
-  open func show(attributedText: NSAttributedString, direction: PopTipDirection, maxWidth: CGFloat, in view: UIView, from frame: CGRect, duration: TimeInterval? = nil) {
+  open func show(attributedText: NSAttributedString, direction: PopTipDirection, maxWidth: CGFloat, in view: UIView, from originatingView: UIView, duration: TimeInterval? = nil) {
     resetView()
     
     text = nil
@@ -551,7 +562,7 @@ open class PopTip: UIView {
     self.maxWidth = maxWidth
     customView?.removeFromSuperview()
     customView = nil
-    from = frame
+    from = originatingView
     
     show(duration: duration)
   }
@@ -563,9 +574,9 @@ open class PopTip: UIView {
   ///   - customView: A custom view
   ///   - direction: The direction of the poptip in relation to the element that generates it
   ///   - view: The view that will hold the poptip as a subview.
-  ///   - frame: The originating frame. The poptip's arrow will point to the center of this frame.
+  ///   - originatingView: The originating frame. The poptip's arrow will point to the center of this frame.
   ///   - duration: Optional time interval that determines when the poptip will self-dismiss.
-  open func show(customView: UIView, direction: PopTipDirection, in view: UIView, from frame: CGRect, duration: TimeInterval? = nil) {
+  open func show(customView: UIView, direction: PopTipDirection, in view: UIView, from originatingView: UIView, duration: TimeInterval? = nil) {
     resetView()
     
     text = nil
@@ -577,7 +588,7 @@ open class PopTip: UIView {
     self.customView = customView
     addSubview(customView)
     customView.layoutIfNeeded()
-    from = frame
+    from = originatingView
     
     show(duration: duration)
   }
@@ -682,7 +693,12 @@ open class PopTip: UIView {
     setNeedsLayout()
     performEntranceAnimation {
       if let tapRemoveGesture = self.tapRemoveGestureRecognizer {
+        tapRemoveGesture.delegate = self
         self.containerView?.addGestureRecognizer(tapRemoveGesture)
+      }
+      if let tapOriginatingViewGestureRecognizer = self.tapOriginatingViewGestureRecognizer {
+        tapOriginatingViewGestureRecognizer.delegate = self
+        self.from.addGestureRecognizer(tapOriginatingViewGestureRecognizer)
       }
       if let swipeGesture = self.swipeGestureRecognizer {
         self.containerView?.addGestureRecognizer(swipeGesture)
@@ -703,7 +719,7 @@ open class PopTip: UIView {
     if shouldDismissOnTap {
       hide()
     }
-    tapHandler?(self)
+    tapPopTipHandler?(self)
   }
   
   @objc fileprivate func handleTapOutside(_ gesture: UITapGestureRecognizer) {
@@ -712,7 +728,14 @@ open class PopTip: UIView {
     }
     tapOutsideHandler?(self)
   }
-  
+
+  @objc fileprivate func handleOriginatingViewTap(_ gesture: UITapGestureRecognizer) {
+    if shouldDismissOnTapOriginatingView {
+      hide()
+    }
+    tapOriginatingViewHandler?(self)
+  }
+
   @objc fileprivate func handleSwipeOutside(_ gesture: UITapGestureRecognizer) {
     if shouldDismissOnSwipeOutside {
       hide()
@@ -815,5 +838,13 @@ fileprivate extension UIEdgeInsets {
   
   var vertical: CGFloat {
     return self.top + self.bottom
+  }
+}
+
+extension PopTip: UIGestureRecognizerDelegate {
+  public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldBeRequiredToFailBy otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    // Make sure that the tapOriginatingViewGestureRecognizer and the tapRemoveGestureRecognizer work as expected, that is
+    // take into account the tapOriginatingViewGestureRecognizer before the tapRemoveGestureRecognizer.
+    return gestureRecognizer == tapOriginatingViewGestureRecognizer && otherGestureRecognizer == tapRemoveGestureRecognizer
   }
 }
