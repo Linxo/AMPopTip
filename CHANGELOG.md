@@ -2,6 +2,7 @@
 All notable changes to this project will be documented in this file.
 `AMPopTip` adheres to [Semantic Versioning](http://semver.org/).
 
+- `3.5.2` Releases - [3.5.2](#352)
 - `3.5.1` Releases - [3.5.1](#351)
 - `3.5.0` Releases - [3.5.0](#350)  
 - `3.4.0` Releases - [3.4.0](#340)  
@@ -22,6 +23,10 @@ All notable changes to this project will be documented in this file.
 - `0.8.x` Releases - [0.8](#08)
 
 ---
+
+## [3.5.2](https://github.com/andreamazz/AMPopTip/releases/tag/3.5.2)
+
+- Removed previously added originating view and passing frame again. Added a boolean to consider the originating frame to trigger the tapHandler.
 
 ## [3.5.1](https://github.com/andreamazz/AMPopTip/releases/tag/3.5.1)
 
