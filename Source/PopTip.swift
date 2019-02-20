@@ -213,7 +213,7 @@ open class PopTip: UIView {
   /// The mask by appears with fade in effect only.
   open private(set) var backgroundMask: UIView?
   /// The tap gesture recognizer. Read-only.
-  open private(set) var tapPopTipGestureRecognizer: UITapGestureRecognizer?
+  open private(set) var tapGestureRecognizer: UITapGestureRecognizer?
   fileprivate var attributedText: NSAttributedString?
   fileprivate var paragraphStyle = NSMutableParagraphStyle()
   fileprivate var tapRemoveGestureRecognizer: UITapGestureRecognizer?
@@ -449,10 +449,10 @@ open class PopTip: UIView {
     
     setNeedsDisplay()
 
-    if tapPopTipGestureRecognizer == nil {
-        tapPopTipGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
-        tapPopTipGestureRecognizer?.cancelsTouchesInView = false
-        self.addGestureRecognizer(tapPopTipGestureRecognizer!)
+    if tapGestureRecognizer == nil {
+        tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(PopTip.handleTap(_:)))
+        tapGestureRecognizer?.cancelsTouchesInView = false
+        self.addGestureRecognizer(tapGestureRecognizer!)
     }
 
     if shouldDismissOnTapOutside && tapRemoveGestureRecognizer == nil {
@@ -568,7 +568,7 @@ open class PopTip: UIView {
   ///   - customView: A custom view
   ///   - direction: The direction of the poptip in relation to the element that generates it
   ///   - view: The view that will hold the poptip as a subview.
-  ///   - originatingView: The originating frame. The poptip's arrow will point to the center of this frame.
+  ///   - frame: The originating frame. The poptip's arrow will point to the center of this frame.
   ///   - duration: Optional time interval that determines when the poptip will self-dismiss.
   open func show(customView: UIView, direction: PopTipDirection, in view: UIView, from frame: CGRect, duration: TimeInterval? = nil) {
     resetView()
