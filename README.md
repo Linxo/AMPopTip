@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="420" src="assets/logo.png"/>
+<img width="420" src="assets/logo.png"/>
 </p>
 
 [![Build Status](https://travis-ci.org/andreamazz/AMPopTip.svg)](https://travis-ci.org/andreamazz/AMPopTip)
@@ -7,16 +7,16 @@
 [![CocoaPods](https://cocoapod-badges.herokuapp.com/v/AMPopTip/badge.svg)](http://cocoapods.org/?q=ampoptip)
 [![Docs](https://img.shields.io/cocoapods/metrics/doc-percent/AMPopTip.svg)](http://cocoadocs.org/docsets/AMPopTip)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-![Swift 3.0](https://img.shields.io/badge/swift-4.2-orange.svg)
+![Swift 4.2](https://img.shields.io/badge/swift-4.2-orange.svg)
 [![Join the chat at https://gitter.im/andreamazz/AMPopTip](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/andreamazz/AMPopTip?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Animated popover that pops out of a frame. You can specify the direction of the popover and the arrow that points to its origin. Color, border radius and font can be easily customized.
 This popover can be used to leave subtle hints about your UI and provide fun looking onboarding popups.  
 
 <p align="center">
-  <a href='https://appetize.io/app/g7x2pwb9jtxdpz9yjb2p5wzk6g' alt='Live demo'>
-    <img width="150" height="75" src="assets/demo-button.png"/>
-  </a>
+<a href='https://appetize.io/app/g7x2pwb9jtxdpz9yjb2p5wzk6g' alt='Live demo'>
+<img width="150" height="75" src="assets/demo-button.png"/>
+</a>
 </p>
 
 # Screenshot
@@ -46,12 +46,12 @@ You must specify the text that you want to display alongside the popover directi
 
 ```swift
 let popTip = PopTip()
-popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView.frame)
+popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView)
 ```
 
 You can also display the popover in the center, with no arrow, in this case the `from` can be the whole view:
 ```swift
-popTip.show(text: "Hey! Listen!", direction: .none, maxWidth: 200, in: view, from: view.frame)
+popTip.show(text: "Hey! Listen!", direction: .none, maxWidth: 200, in: view, from: view)
 ```
 
 ## Coordinate system
@@ -63,7 +63,7 @@ You can provide a custom view that will be wrapped in the PopTip and presented.
 ```swift
 let customView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
 // Configure your view
-popTip.show(customView: customView, direction: .down, in: view, from: someView.frame)
+popTip.show(customView: customView, direction: .down, in: view, from: someView)
 ```
 
 ## Dismissing the popover
@@ -75,7 +75,7 @@ popTip.hide()
 
 Or you can specify the duration of the popover:
 ```swift
-popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView.frame, duration: 3)
+popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView, duration: 3)
 ```
 
 You can also let the user dismiss the popover by tapping on it:
@@ -86,29 +86,33 @@ popTip.shouldDismissOnTap = true
 You can add a block that will be fired when the user taps the PopTip...
 ```swift
 popTip.tapHandler = { popTip in
-  print("\(popTip) tapped")
+print("\(popTip) tapped")
 }
 ```
 
 ... when the popover is shown...
 ```swift
 popTip.appearHandler = { popTip in
-  print("\(popTip) appeared")
+print("\(popTip) appeared")
 };
 ```
 
 ... or when the popover is dismissed:
 ```swift
 popTip.dismissHandler = { popTip in
-  print("\(popTip) dismissed")
+print("\(popTip) dismissed")
 }
 
 popTip.tapOutsideHandler = { _ in
-  print("tap outside")
+print("tap outside")
+}
+
+popTip.tapOriginatingViewHandler = { _ in
+print("tap on originating view")
 }
 
 popTip.swipeOutsideHandler = { _ in
-  print("swipe outside")
+print("swipe outside")
 }
 ```
 
@@ -125,12 +129,12 @@ popTip.update(customView: someView)
 The position can also be changed by updating the `from` property:
 
 ```swift
-let here = CGRect(x: 100, 100, 10, 10)
-let there = CGRect(x: 400, 400, 10, 10)
+let here = UIView(frame: CGRect(x: 100, y: 100, width: 10, height: 10))
+let there = UIView(frame: CGRect(x: 400, y: 400, width: 10, height: 10))
 
 popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: here)
 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-  popTip.from = there
+popTip.from = there
 }
 ```
 
@@ -154,13 +158,13 @@ PopTipEntranceAnimation.custom
 You can provide your own animation block when using `PopTipEntranceAnimation.custom`:
 ```swift
 popTip.entranceAnimationHandler = { [weak self] completion in
-  guard let `self` = self else { return }
-  self.popTip.transform = CGAffineTransform(rotationAngle: 0.3)
-  UIView.animate(withDuration: 0.5, animations: {
-    self.popTip.transform = .identity
-  }, completion: { (_) in
-    completion()
-  })
+guard let `self` = self else { return }
+self.popTip.transform = CGAffineTransform(rotationAngle: 0.3)
+UIView.animate(withDuration: 0.5, animations: {
+self.popTip.transform = .identity
+}, completion: { (_) in
+completion()
+})
 }
 ```
 This sample makes the PopTip rotate on entrance. Make sure to call the completion block when the animation is done. Also note that the animation is fired as soon as the PopTip is added as subview.
@@ -240,23 +244,23 @@ Thanks to [everyone](https://github.com/andreamazz/AMPopTip/graphs/contributors)
 
 # MIT License
 
-	Copyright (c) 2017 Andrea Mazzini. All rights reserved.
+Copyright (c) 2017 Andrea Mazzini. All rights reserved.
 
-	Permission is hereby granted, free of charge, to any person obtaining a
-	copy of this software and associated documentation files (the "Software"),
-	to deal in the Software without restriction, including
-	without limitation the rights to use, copy, modify, merge, publish,
-	distribute, sublicense, and/or sell copies of the Software, and to
-	permit persons to whom the Software is furnished to do so, subject to
-	the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
 
-	The above copyright notice and this permission notice shall be included
-	in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
