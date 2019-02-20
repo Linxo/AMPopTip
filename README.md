@@ -46,12 +46,12 @@ You must specify the text that you want to display alongside the popover directi
 
 ```swift
 let popTip = PopTip()
-popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView)
+popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView.frame)
 ```
 
 You can also display the popover in the center, with no arrow, in this case the `from` can be the whole view:
 ```swift
-popTip.show(text: "Hey! Listen!", direction: .none, maxWidth: 200, in: view, from: view)
+popTip.show(text: "Hey! Listen!", direction: .none, maxWidth: 200, in: view, from: view.frame)
 ```
 
 ## Coordinate system
@@ -63,7 +63,7 @@ You can provide a custom view that will be wrapped in the PopTip and presented.
 ```swift
 let customView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
 // Configure your view
-popTip.show(customView: customView, direction: .down, in: view, from: someView)
+popTip.show(customView: customView, direction: .down, in: view, from: someView.frame)
 ```
 
 ## Dismissing the popover
@@ -75,7 +75,7 @@ popTip.hide()
 
 Or you can specify the duration of the popover:
 ```swift
-popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView, duration: 3)
+popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: someView.frame, duration: 3)
 ```
 
 You can also let the user dismiss the popover by tapping on it:
@@ -107,10 +107,6 @@ popTip.tapOutsideHandler = { _ in
 print("tap outside")
 }
 
-popTip.tapOriginatingViewHandler = { _ in
-print("tap on originating view")
-}
-
 popTip.swipeOutsideHandler = { _ in
 print("swipe outside")
 }
@@ -129,8 +125,8 @@ popTip.update(customView: someView)
 The position can also be changed by updating the `from` property:
 
 ```swift
-let here = UIView(frame: CGRect(x: 100, y: 100, width: 10, height: 10))
-let there = UIView(frame: CGRect(x: 400, y: 400, width: 10, height: 10))
+let here = CGRect(x: 100, y: 100, width: 10, height: 10)
+let there = CGRect(x: 400, y: 400, width: 10, height: 10)
 
 popTip.show(text: "Hey! Listen!", direction: .up, maxWidth: 200, in: view, from: here)
 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

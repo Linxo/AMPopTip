@@ -56,13 +56,13 @@ public extension PopTip {
     transform = CGAffineTransform(scaleX: 0.6, y: 0.6)
     switch direction {
     case .up:
-      transform = transform.translatedBy(x: 0, y: -from.frame.origin.y)
+      transform = transform.translatedBy(x: 0, y: -from.origin.y)
     case .down, .none:
-      transform = transform.translatedBy(x: 0, y: (containerView?.frame.height ?? 0) - from.frame.origin.y)
+      transform = transform.translatedBy(x: 0, y: (containerView?.frame.height ?? 0) - from.origin.y)
     case .left:
-      transform = transform.translatedBy(x: from.frame.origin.x, y: 0)
+      transform = transform.translatedBy(x: from.origin.x, y: 0)
     case .right:
-      transform = transform.translatedBy(x: (containerView?.frame.width ?? 0) - from.frame.origin.x, y: 0)
+      transform = transform.translatedBy(x: (containerView?.frame.width ?? 0) - from.origin.x, y: 0)
     }
     if let backgroundMask = backgroundMask {
       containerView?.addSubview(backgroundMask)
